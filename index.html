@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e-Lixo | Descarte de Lixo Eletrônico</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --white: #fff;
+      --green: #2f855a;
+      --dark: #1a202c;
+      --red: #e53e3e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: #333;
+    }
+    header {
+      background: var(--green);
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    main {
+      max-width: 1100px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 2rem;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--white);
+      border-radius: .5rem;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,.05);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      margin-top: 0;
+      margin-bottom: .5rem;
+      font-size: 1.1rem;
+      color: var(--dark);
+    }
+    #map {
+      width: 100%;
+      height: 280px;
+      border-radius: .4rem;
+      margin-bottom: .6rem;
+    }
+    .filter-bar {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: .8rem;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: .4rem .5rem;
+      border: 1px solid #ccc;
+      border-radius: .3rem;
+      flex: 1;
+    }
+    .points-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: .75rem;
+    }
+    .point-item {
+      border: 1px solid #ececec;
+      border-radius: .4rem;
+      padding: .6rem .7rem;
+      background: #fff;
+    }
+    .point-item h4 {
+      margin: 0 0 .3rem;
+      font-size: .95rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #edf2f7;
+      font-size: .68rem;
+      padding: .15rem .35rem;
+      border-radius: .2rem;
+      margin-top: .3rem;
+    }
+    form label {
+      display: block;
+      margin-top: .5rem;
+      font-size: .85rem;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: .4rem .5rem;
+      border: 1px solid #ccc;
+      border-radius: .3rem;
+      margin-top: .25rem;
+      font-size: .8rem;
+    }
+    form button {
+      margin-top: .7rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: .45rem .9rem;
+      border-radius: .3rem;
+      cursor: pointer;
+    }
+    .msg-ok {
+      background: #c6f6d5;
+      color: #22543d;
+      padding: .4rem .5rem;
+      border-radius: .3rem;
+      font-size: .8rem;
+      margin-top: .5rem;
+    }
+    .msg-warn {
+      background: #fed7d7;
+      color: var(--red);
+      padding: .4rem .5rem;
+      border-radius: .3rem;
+      font-size: .8rem;
+      margin-top: .5rem;
+      display: none;
+    }
+    .edu-item {
+      background: #f7fafc;
+      border-left: 4px solid var(--green);
+      padding: .4rem .6rem;
+      margin-bottom: .4rem;
+      font-size: .8rem;
+    }
+    /* --- Box Lixo Eletrônico (imagem + texto lado a lado) --- */
+.lixo-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.2rem;
+}
+
+.lixo-conteudo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.lixo-imagem img {
+  width: 100%;
+  max-width: 320px;
+  border-radius: .6rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+
+.lixo-texto {
+  flex: 1;
+  font-size: .88rem;
+  line-height: 1.55;
+}
+
+.lixo-texto p {
+  margin-bottom: .7rem;
+}
+
+@media (max-width: 800px) {
+  .lixo-conteudo {
+    flex-direction: column;
+    text-align: center;
+  }
+  .lixo-texto {
+    text-align: center;
+  }
+}
+
+    @media (max-width: 880px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lixo Eletrônico</h1>
+    <p>Mapa de pontos de descarte de lixo eletrônico Rio de Janeiro</p>
+  </header>
+
+  <main>
+    <section>
+      <div class="card">
+        <h2 class="section-title">Mapa dos pontos de coleta</h2>
+        <div id="map"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Pontos de coleta (Rio de Janeiro)</h2>
+        <div class="filter-bar">
+          <input type="text" id="searchInput" placeholder="Filtrar por bairro, endereço ou nome..." />
+          <select id="typeFilter">
+            <option value="">Todos os tipos</option>
+            <option value="Ponto público">Ponto público</option>
+            <option value="Cooperativa">Cooperativa</option>
+          </select>
+        </div>
+        <div id="pointsContainer" class="points-list"></div>
+        <p id="emptyMsg" style="display:none;font-size:.75rem;margin-top:.5rem;">Nenhum ponto encontrado.</p>
+      </div>
+      
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2 class="section-title">Adicionar novo ponto de coleta</h2>
+        <form id="suggestForm">
+          <label for="name">Nome do local</label>
+          <input type="text" id="name" required />
+
+          <label for="address">Endereço</label>
+          <input type="text" id="address" placeholder="Rua, nº, bairro" required />
+
+          <label for="city">Cidade</label>
+          <input type="text" id="city" value="Rio de Janeiro" required />
+
+          <label for="type">Tipo do ponto</label>
+          <input type="text" id="type" placeholder="Ponto público / Cooperativa" />
+
+          <button type="submit">Novo ponto</button>
+          <div id="formMsg" class="msg-ok" style="display:none;">Ponto adicionado com sucesso!</div>
+          <div id="warnMsg" class="msg-warn">Endereço não localizado. O ponto foi adicionado no centro do Rio de Janeiro.</div>
+        </form>
+      </div>
+       <div class="card lixo-info">
+  <div class="lixo-conteudo">
+    <div class="lixo-imagem">
+      <img src="como-descartar-lixo-eletronico-da-forma-correta-topo.jpg" alt="Lixo eletrônico">
+    </div>
+    <div class="lixo-texto">
+      <h2 class="section-title">O que é lixo eletrônico?</h2>
+      <p>
+        O lixo eletrônico — ou <strong>e-lixo</strong> — é formado por equipamentos elétricos e eletrônicos descartados, 
+        como celulares, computadores e televisores.
+      </p>
+      <p>
+        Esses materiais contêm metais pesados e substâncias tóxicas que, quando descartados incorretamente, 
+        contaminam o solo e os lençóis freáticos. 
+      </p>
+      <p>
+        <strong>Descarte consciente</strong> significa cuidar do meio ambiente e contribuir para os 
+        <em>Objetivos de Desenvolvimento Sustentável</em>
+      </p>
+    </div>
+  </div>
+</div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const points = [
+      { name: "BeGreen – Barra da Tijuca", city: "Rio de Janeiro", address: "Av. Ayrton Senna, 3000 – Barra da Tijuca", type: "Ponto público", lat: -23.0050, lng: -43.3650 },
+      { name: "PEV – Botafogo", city: "Rio de Janeiro", address: "Rua Mena Barreto, 143 – Botafogo", type: "Ponto público", lat: -22.9550, lng: -43.1850 },
+      { name: "PEV – Tijuca", city: "Rio de Janeiro", address: "Rua Dr. Renato Rocco, 400 – Tijuca", type: "Ponto público", lat: -22.9303, lng: -43.2443 },
+    ];
+
+    const map = L.map('map').setView([-22.91, -43.2], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+
+    const markersLayer = L.layerGroup().addTo(map);
+    points.forEach(p => L.marker([p.lat, p.lng]).addTo(markersLayer).bindPopup(`<b>${p.name}</b><br>${p.address}`));
+
+    const pointsContainer = document.getElementById("pointsContainer");
+    const searchInput = document.getElementById("searchInput");
+    const typeFilter = document.getElementById("typeFilter");
+    const emptyMsg = document.getElementById("emptyMsg");
+
+    function renderPoints(list) {
+      pointsContainer.innerHTML = "";
+      emptyMsg.style.display = list.length ? "none" : "block";
+      list.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "point-item";
+        div.innerHTML = `<h4>${p.name}</h4><p>${p.address}</p><p style="font-size:.8rem">${p.type}</p>`;
+        pointsContainer.appendChild(div);
+      });
+    }
+    function filterPoints() {
+      const text = searchInput.value.toLowerCase();
+      const type = typeFilter.value;
+      renderPoints(points.filter(p =>
+        (p.name + p.address).toLowerCase().includes(text) &&
+        (!type || p.type === type)
+      ));
+    }
+    searchInput.addEventListener("input", filterPoints);
+    typeFilter.addEventListener("change", filterPoints);
+    renderPoints(points);
+
+    async function geocode(address) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (data.length > 0) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon)
+        };
+      }
+    } catch (e) {
+      console.error("Erro ao geocodificar", e);
+    }
+    return null;
+  }
+
+  const form = document.getElementById("suggestForm");
+  const msgOk = document.getElementById("formMsg");
+  const msgWarn = document.getElementById("warnMsg");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgOk.style.display = "none";
+    msgWarn.style.display = "none";
+
+    const name = document.getElementById("name").value;
+    const address = document.getElementById("address").value;
+    const city = document.getElementById("city").value;
+    const type = document.getElementById("type").value || "Ponto indicado";
+
+    const fullAddress = `${address}, ${city}, Brasil`;
+    const geo = await geocode(fullAddress);
+
+    // se NÃO achou o endereço, avisa e para aqui
+    if (!geo) {
+      msgWarn.textContent = "Endereço não encontrado. Verifique o endereço (rua, número, bairro) e tente novamente.";
+      msgWarn.style.display = "block";
+      return;
+    }
+
+    // se achou, adiciona
+    const newPoint = {
+      name,
+      address,
+      city,
+      type,
+      lat: geo.lat,
+      lng: geo.lng
+    };
+
+    points.push(newPoint);
+    renderPoints(points);
+
+    L.marker([newPoint.lat, newPoint.lng])
+      .addTo(markersLayer)
+      .bindPopup(`<b>${newPoint.name}</b><br>${newPoint.address}`);
+
+    msgOk.style.display = "block";
+    form.reset();
+
+    setTimeout(() => {
+      msgOk.style.display = "none";
+      msgWarn.style.display = "none";
+    }, 5000);
+  });
+  </script>
+</body>
+</html>
