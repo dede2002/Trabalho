@@ -25,7 +25,30 @@
       color: #fff;
       padding: 1.5rem;
       text-align: center;
+      position: relative;
     }
+    header h1 {
+      margin: 0;
+    }
+    header p {
+      margin: .2rem 0 0;
+      font-size: .9rem;
+    }
+    /* Botão Área Administrativa no topo */
+    .admin-btn {
+      position: absolute;
+      right: 1.5rem;
+      top: 1.3rem;
+      background: #fff;
+      color: var(--green);
+      border: none;
+      padding: .35rem .75rem;
+      border-radius: .3rem;
+      font-size: .75rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
     main {
       max-width: 1100px;
       margin: 1.5rem auto;
@@ -74,25 +97,18 @@
       border-radius: .4rem;
       padding: .6rem .7rem;
       background: #fff;
+      font-size: .8rem;
     }
     .point-item h4 {
       margin: 0 0 .3rem;
       font-size: .95rem;
-    }
-    .badge {
-      display: inline-block;
-      background: #edf2f7;
-      font-size: .68rem;
-      padding: .15rem .35rem;
-      border-radius: .2rem;
-      margin-top: .3rem;
     }
     form label {
       display: block;
       margin-top: .5rem;
       font-size: .85rem;
     }
-    form input, form textarea {
+    form input, form textarea, form select {
       width: 100%;
       padding: .4rem .5rem;
       border: 1px solid #ccc;
@@ -108,6 +124,7 @@
       padding: .45rem .9rem;
       border-radius: .3rem;
       cursor: pointer;
+      font-size: .8rem;
     }
     .msg-ok {
       background: #c6f6d5;
@@ -116,6 +133,7 @@
       border-radius: .3rem;
       font-size: .8rem;
       margin-top: .5rem;
+      display: none;
     }
     .msg-warn {
       background: #fed7d7;
@@ -126,57 +144,76 @@
       margin-top: .5rem;
       display: none;
     }
-    .edu-item {
-      background: #f7fafc;
-      border-left: 4px solid var(--green);
-      padding: .4rem .6rem;
-      margin-bottom: .4rem;
-      font-size: .8rem;
+
+    /* Box Lixo Eletrônico (imagem + texto lado a lado) */
+    .lixo-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 1.2rem;
     }
-    /* --- Box Lixo Eletrônico (imagem + texto lado a lado) --- */
-.lixo-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 1.2rem;
-}
+    .lixo-conteudo {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .lixo-imagem img {
+      width: 100%;
+      max-width: 320px;
+      border-radius: .6rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,.1);
+    }
+    .lixo-texto {
+      flex: 1;
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+    .lixo-texto p {
+      margin-bottom: .7rem;
+    }
 
-.lixo-conteudo {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
+    /* Botões do admin dentro da lista */
+    .point-item button {
+      margin-top: .4rem;
+      padding: .25rem .6rem;
+      font-size: .75rem;
+      border: none;
+      border-radius: .25rem;
+      cursor: pointer;
+    }
+    .btn-approve {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-reject {
+      background: var(--red);
+      color: #fff;
+      margin-left: .35rem;
+    }
+    .btn-delete {
+      background: var(--red);
+      color: #fff;
+      margin-top: .4rem;
+    }
 
-.lixo-imagem img {
-  width: 100%;
-  max-width: 320px;
-  border-radius: .6rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
-
-.lixo-texto {
-  flex: 1;
-  font-size: .88rem;
-  line-height: 1.55;
-}
-
-.lixo-texto p {
-  margin-bottom: .7rem;
-}
-
-@media (max-width: 800px) {
-  .lixo-conteudo {
-    flex-direction: column;
-    text-align: center;
-  }
-  .lixo-texto {
-    text-align: center;
-  }
-}
-
+    @media (max-width: 800px) {
+      .lixo-conteudo {
+        flex-direction: column;
+        text-align: center;
+      }
+      .lixo-texto {
+        text-align: center;
+      }
+    }
     @media (max-width: 880px) {
       main { grid-template-columns: 1fr; }
+      header {
+        padding-top: 2.8rem;
+      }
+      .admin-btn {
+        top: .8rem;
+      }
     }
   </style>
 </head>
@@ -184,6 +221,7 @@
   <header>
     <h1>Lixo Eletrônico</h1>
     <p>Mapa de pontos de descarte de lixo eletrônico Rio de Janeiro</p>
+    <button class="admin-btn" id="openAdminBtn">Área Administrativa</button>
   </header>
 
   <main>
@@ -197,108 +235,231 @@
         <h2 class="section-title">Pontos de coleta (Rio de Janeiro)</h2>
         <div class="filter-bar">
           <input type="text" id="searchInput" placeholder="Filtrar por bairro, endereço ou nome..." />
-          <select id="typeFilter">
-            <option value="">Todos os tipos</option>
-            <option value="Ponto público">Ponto público</option>
-            <option value="Cooperativa">Cooperativa</option>
-          </select>
         </div>
         <div id="pointsContainer" class="points-list"></div>
         <p id="emptyMsg" style="display:none;font-size:.75rem;margin-top:.5rem;">Nenhum ponto encontrado.</p>
       </div>
-      
     </section>
 
     <aside>
+      <!-- QUERO DESCARTAR -->
       <div class="card">
-        <h2 class="section-title">Adicionar novo ponto de coleta</h2>
-        <form id="suggestForm">
-          <label for="name">Nome do local</label>
-          <input type="text" id="name" required />
+        <h2 class="section-title">Quero descartar e-lixo</h2>
+        <p style="font-size:.75rem;">Preencha para agendar o descarte.</p>
+        <form id="discardForm">
+          <label for="d-name">Nome</label>
+          <input type="text" id="d-name" required>
 
-          <label for="address">Endereço</label>
-          <input type="text" id="address" placeholder="Rua, nº, bairro" required />
+          <label for="d-email">E-mail</label>
+          <input type="email" id="d-email" placeholder="seuemail@exemplo.com" required>
 
-          <label for="city">Cidade</label>
-          <input type="text" id="city" value="Rio de Janeiro" required />
+          <label for="d-point">Ponto de descarte</label>
+          <select id="d-point" required>
+            <option value="">Selecione um ponto</option>
+          </select>
 
-          <label for="type">Tipo do ponto</label>
-          <input type="text" id="type" placeholder="Ponto público / Cooperativa" />
+          <label for="d-item">O que vai descartar?</label>
+          <input type="text" id="d-item" placeholder="ex.: notebook, 2 celulares..." required>
 
-          <button type="submit">Novo ponto</button>
-          <div id="formMsg" class="msg-ok" style="display:none;">Ponto adicionado com sucesso!</div>
-          <div id="warnMsg" class="msg-warn">Endereço não localizado. O ponto foi adicionado no centro do Rio de Janeiro.</div>
+          <label for="d-datetime">Data e hora do descarte</label>
+          <input type="datetime-local" id="d-datetime" required>
+
+          <button type="submit">Agendar descarte</button>
+          <div id="discardMsg" class="msg-ok">Descarte registrado.</div>
         </form>
       </div>
-       <div class="card lixo-info">
-  <div class="lixo-conteudo">
-    <div class="lixo-imagem">
-      <img src="como-descartar-lixo-eletronico-da-forma-correta-topo.jpg" alt="Lixo eletrônico">
-    </div>
-    <div class="lixo-texto">
-      <h2 class="section-title">O que é lixo eletrônico?</h2>
-      <p>
-        O lixo eletrônico — ou <strong>e-lixo</strong> — é formado por equipamentos elétricos e eletrônicos descartados, 
-        como celulares, computadores e televisores.
-      </p>
-      <p>
-        Esses materiais contêm metais pesados e substâncias tóxicas que, quando descartados incorretamente, 
-        contaminam o solo e os lençóis freáticos. 
-      </p>
-      <p>
-        <strong>Descarte consciente</strong> significa cuidar do meio ambiente e contribuir para os 
-        <em>Objetivos de Desenvolvimento Sustentável</em>
-      </p>
-    </div>
-  </div>
-</div>
+
+      <!-- SOU PONTO DE COLETA -->
+      <div class="card">
+        <h2 class="section-title">Sou ponto de coleta</h2>
+        <p style="font-size:.75rem;">Cadastre seu ponto. Vamos analisar as informações e entrar em contato pelo WhatsApp.</p>
+        <form id="partnerForm">
+          <label for="p-name">Nome do ponto / empresa</label>
+          <input type="text" id="p-name" required>
+
+          <label for="p-address">Endereço completo (rua, nº, bairro)</label>
+          <input type="text" id="p-address" required>
+
+          <label for="p-contact">Seu WhatsApp (somente números, com DDD)</label>
+          <input type="text" id="p-contact" placeholder="ex.: 21999999999" required>
+
+          <label for="p-accepted">O que recebe?</label>
+          <input type="text" id="p-accepted" placeholder="ex.: celulares, computadores..." required>
+
+          <button type="submit">Cadastrar ponto</button>
+          <div id="partnerMsg" class="msg-ok">Ponto enviado para análise.</div>
+        </form>
+      </div>
+
+      <!-- BOX DA IMAGEM -->
+      <div class="card lixo-info">
+        <div class="lixo-conteudo">
+          <div class="lixo-imagem">
+            <img src="como-descartar-lixo-eletronico-da-forma-correta-topo.jpg" alt="Lixo eletrônico">
+          </div>
+          <div class="lixo-texto">
+            <h2 class="section-title">Por que descartar certo?</h2>
+            <p style="font-size:.8rem;line-height:1.4;">
+             O descarte adequado de lixo eletrônico é fundamental para proteger o meio ambiente e a saúde pública. Equipamentos como celulares, computadores, baterias e eletrodomésticos contêm metais pesados e componentes tóxicos que, quando descartados de forma incorreta, contaminam solo, água e ar.
+            </p>
+          </div>
+        </div>
+      </div>
     </aside>
   </main>
 
+  <!-- ÁREA ADMINISTRATIVA (abaixo do site público) -->
+  <section id="adminArea" style="display:none;max-width:1100px;margin:0 auto 2rem;padding:0 1rem;">
+    <div class="card" id="adminLoginCard">
+      <h2 class="section-title">Área Administrativa</h2>
+      <p style="font-size:.8rem;">Apenas para responsáveis pela plataforma.</p>
+      <form id="adminLoginForm">
+        <label for="adminUser">Login</label>
+        <input type="text" id="adminUser" required>
+
+        <label for="adminPass">Senha</label>
+        <input type="password" id="adminPass" required>
+
+        <button type="submit">Entrar</button>
+        <div id="adminLoginMsg" class="msg-warn">Login ou senha inválidos.</div>
+      </form>
+    </div>
+
+    <div class="card" id="adminPanel" style="display:none;">
+      <h2 class="section-title">Gestão de pontos de coleta</h2>
+      <p style="font-size:.8rem;">Apenas pontos aprovados aparecem no mapa, na lista pública e no agendamento.</p>
+
+      <h3 class="section-title" style="font-size:1rem;">Pontos pendentes de aprovação</h3>
+      <div id="pendingList" class="points-list"></div>
+      <p id="noPendingMsg" style="font-size:.8rem;display:none;">Não há pontos pendentes no momento.</p>
+
+      <hr style="margin:1rem 0;">
+
+      <h3 class="section-title" style="font-size:1rem;">Pontos parceiros ativos (aprovados)</h3>
+      <div id="approvedList" class="points-list"></div>
+      <p id="noApprovedMsg" style="font-size:.8rem;display:none;">Não há pontos parceiros aprovados ainda.</p>
+
+      <hr style="margin:1rem 0;">
+
+      <h3 class="section-title" style="font-size:1rem;">Agendamentos de descarte</h3>
+      <div id="discardList" class="points-list"></div>
+      <p id="noDiscardMsg" style="font-size:.8rem;display:none;">Não há agendamentos registrados.</p>
+    </div>
+  </section>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const points = [
-      { name: "BeGreen – Barra da Tijuca", city: "Rio de Janeiro", address: "Av. Ayrton Senna, 3000 – Barra da Tijuca", type: "Ponto público", lat: -23.0050, lng: -43.3650 },
-      { name: "PEV – Botafogo", city: "Rio de Janeiro", address: "Rua Mena Barreto, 143 – Botafogo", type: "Ponto público", lat: -22.9550, lng: -43.1850 },
-      { name: "PEV – Tijuca", city: "Rio de Janeiro", address: "Rua Dr. Renato Rocco, 400 – Tijuca", type: "Ponto público", lat: -22.9303, lng: -43.2443 },
-    ];
+  // ===== CONFIGURAÇÃO =====
+  // Troque este número pelo SEU WhatsApp (DDI+DDD), ex.: 5521999999999
+  const ADMIN_WHATSAPP = "5521972781507";
 
-    const map = L.map('map').setView([-22.91, -43.2], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap', maxZoom: 19
-    }).addTo(map);
+  // ===== Dados base (sem pontos fixos) =====
+  const basePoints = []; // começamos sem pontos, só os aprovados aparecem
 
-    const markersLayer = L.layerGroup().addTo(map);
-    points.forEach(p => L.marker([p.lat, p.lng]).addTo(markersLayer).bindPopup(`<b>${p.name}</b><br>${p.address}`));
+  let approvedPoints = [];
+  let pendingPoints = [];
+  let discardLeads = []; // agendamentos de descarte
+  let points = []; // basePoints + approvedPoints
 
-    const pointsContainer = document.getElementById("pointsContainer");
-    const searchInput = document.getElementById("searchInput");
-    const typeFilter = document.getElementById("typeFilter");
-    const emptyMsg = document.getElementById("emptyMsg");
+  // ===== LocalStorage helpers =====
+  const LS_PENDING = "elixo_pendingPoints";
+  const LS_APPROVED = "elixo_approvedPoints";
+  const LS_DISCARDS = "elixo_discardLeads";
 
-    function renderPoints(list) {
-      pointsContainer.innerHTML = "";
-      emptyMsg.style.display = list.length ? "none" : "block";
-      list.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "point-item";
-        div.innerHTML = `<h4>${p.name}</h4><p>${p.address}</p><p style="font-size:.8rem">${p.type}</p>`;
-        pointsContainer.appendChild(div);
-      });
+  function loadData() {
+    try {
+      const pend = localStorage.getItem(LS_PENDING);
+      const appr = localStorage.getItem(LS_APPROVED);
+      const disc = localStorage.getItem(LS_DISCARDS);
+
+      pendingPoints = pend ? JSON.parse(pend) : [];
+      approvedPoints = appr ? JSON.parse(appr) : [];
+      discardLeads  = disc ? JSON.parse(disc) : [];
+    } catch (e) {
+      pendingPoints = [];
+      approvedPoints = [];
+      discardLeads  = [];
     }
-    function filterPoints() {
-      const text = searchInput.value.toLowerCase();
-      const type = typeFilter.value;
-      renderPoints(points.filter(p =>
-        (p.name + p.address).toLowerCase().includes(text) &&
-        (!type || p.type === type)
-      ));
-    }
-    searchInput.addEventListener("input", filterPoints);
-    typeFilter.addEventListener("change", filterPoints);
+    points = [...basePoints, ...approvedPoints];
+  }
+
+  function saveData() {
+    localStorage.setItem(LS_PENDING, JSON.stringify(pendingPoints));
+    localStorage.setItem(LS_APPROVED, JSON.stringify(approvedPoints));
+    localStorage.setItem(LS_DISCARDS, JSON.stringify(discardLeads));
+  }
+
+  function updatePublicData() {
+    points = [...basePoints, ...approvedPoints];
     renderPoints(points);
+    renderMarkers();
+    fillDiscardPoints();
+  }
 
-    async function geocode(address) {
+  loadData();
+
+  // ===== Mapa =====
+  const map = L.map('map').setView([-22.91, -43.2], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 19
+  }).addTo(map);
+  const markersLayer = L.layerGroup().addTo(map);
+
+  function renderMarkers() {
+    markersLayer.clearLayers();
+    points.forEach(p => {
+      L.marker([p.lat, p.lng]).addTo(markersLayer)
+        .bindPopup(`<b>${p.name}</b><br>${p.address}`);
+    });
+  }
+  renderMarkers();
+
+  // ===== Lista lateral de pontos =====
+  const pointsContainer = document.getElementById("pointsContainer");
+  const searchInput = document.getElementById("searchInput");
+  const typeFilter = document.getElementById("typeFilter");
+  const emptyMsg = document.getElementById("emptyMsg");
+
+  function renderPoints(list) {
+  pointsContainer.innerHTML = "";
+  if (!list.length) {
+    emptyMsg.style.display = "block";
+    return;
+  }
+  emptyMsg.style.display = "none";
+  list.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "point-item";
+    div.innerHTML = `<h4>${p.name}</h4>
+      <p>${p.address}</p>
+      <p style="font-size:.8rem">
+        ${p.accepted ? `Recebe: ${p.accepted}` : (p.type || "")}
+      </p>`;
+    pointsContainer.appendChild(div);
+  });
+}
+
+  renderPoints(points);
+
+  function filterPoints() {
+    const text = (searchInput?.value || "").toLowerCase();
+    const type = typeFilter?.value || "";
+    const filtered = points.filter(p => {
+      const matchesText =
+        p.name.toLowerCase().includes(text) ||
+        (p.address || "").toLowerCase().includes(text);
+      const matchesType = type ? p.type === type : true;
+      return matchesText && matchesType;
+    });
+    renderPoints(filtered);
+    fillDiscardPoints();
+  }
+
+  searchInput?.addEventListener("input", filterPoints);
+  typeFilter?.addEventListener("change", filterPoints);
+
+  // ===== Geocodificação =====
+  async function geocode(address) {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
     try {
       const resp = await fetch(url);
@@ -306,64 +467,332 @@
       if (data.length > 0) {
         return {
           lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon)
+          lng: parseFloat(data[0].lon),
         };
       }
     } catch (e) {
-      console.error("Erro ao geocodificar", e);
+      console.error(e);
     }
     return null;
   }
 
-  const form = document.getElementById("suggestForm");
-  const msgOk = document.getElementById("formMsg");
-  const msgWarn = document.getElementById("warnMsg");
+  // ===== Formulário: Quero descartar (WhatsApp para o dono do ponto) =====
+  const discardForm = document.getElementById("discardForm");
+  const discardMsg = document.getElementById("discardMsg");
 
-  form.addEventListener("submit", async (e) => {
+  function fillDiscardPoints() {
+    const select = document.getElementById("d-point");
+    if (!select) return;
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">Selecione um ponto</option>';
+    points.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.name;
+      opt.textContent = `${p.name} - ${p.address || ""}`;
+      select.appendChild(opt);
+    });
+    if (currentValue) {
+      select.value = currentValue;
+    }
+  }
+  fillDiscardPoints();
+
+  discardForm?.addEventListener("submit", (e) => {
     e.preventDefault();
-    msgOk.style.display = "none";
-    msgWarn.style.display = "none";
+    const nome = document.getElementById("d-name").value;
+    const email = document.getElementById("d-email").value;
+    const ponto = document.getElementById("d-point").value;
+    const item = document.getElementById("d-item").value;
+    const horario = document.getElementById("d-datetime").value;
 
-    const name = document.getElementById("name").value;
-    const address = document.getElementById("address").value;
-    const city = document.getElementById("city").value;
-    const type = document.getElementById("type").value || "Ponto indicado";
+    const lead = {
+      nome,
+      email,
+      ponto,
+      item,
+      horario,
+      criadoEm: new Date().toISOString()
+    };
 
-    const fullAddress = `${address}, ${city}, Brasil`;
-    const geo = await geocode(fullAddress);
+    // 1) Armazena o agendamento
+    discardLeads.push(lead);
+    saveData();
+    console.log("Agendamentos:", discardLeads);
 
-    // se NÃO achou o endereço, avisa e para aqui
-    if (!geo) {
-      msgWarn.textContent = "Endereço não encontrado. Verifique o endereço (rua, número, bairro) e tente novamente.";
-      msgWarn.style.display = "block";
+    // 2) Dados do ponto selecionado (WhatsApp do dono do ponto)
+    const point = points.find(p => p.name === ponto);
+    const pointContactRaw = point && point.contact ? String(point.contact) : "";
+
+    const digits = pointContactRaw.replace(/\D/g, "");
+    if (!digits || digits.length < 10) {
+      discardMsg.innerHTML = `
+        Descarte registrado, mas o WhatsApp do ponto não está cadastrado corretamente.<br>
+        Contate o responsável por outro canal.
+      `;
+      discardMsg.style.display = "block";
+      setTimeout(() => discardMsg.style.display = "none", 8000);
       return;
     }
 
-    // se achou, adiciona
+    // 3) Mensagem automática para o dono do ponto
+    const dataFormatada = horario
+      ? new Date(horario).toLocaleString("pt-BR")
+      : "data/horário não informado";
+
+    const waText = encodeURIComponent(
+      `Olá, sou ${nome} e acabei de agendar um descarte de e-lixo no seu ponto "${ponto}".` +
+      `\n\nDados do agendamento:` +
+      `\n- E-mail: ${email}` +
+      `\n- Itens: ${item}` +
+      `\n- Data/Hora: ${dataFormatada}` +
+      `\n\nMensagem enviada pela plataforma de e-lixo.`
+    );
+
+    const waLink = `https://wa.me/${digits}?text=${waText}`;
+
+    // 4) Abre o WhatsApp com a mensagem pronta
+    window.open(waLink, "_blank");
+
+    // 5) Mensagem de confirmação para o usuário
+    discardMsg.innerHTML = `
+      Descarte registrado com sucesso.<br>
+      Abrimos o WhatsApp com uma mensagem pronta para o responsável pelo ponto.
+    `;
+    discardMsg.style.display = "block";
+
+    discardForm.reset();
+    fillDiscardPoints();
+    setTimeout(() => discardMsg.style.display = "none", 8000);
+
+    // Se o admin estiver logado, atualiza a lista de agendamentos
+    if (typeof renderDiscards === "function") {
+      renderDiscards();
+    }
+  });
+
+  // ===== Formulário: Sou ponto de coleta (WhatsApp para o ADMIN) =====
+  const partnerForm = document.getElementById("partnerForm");
+  const partnerMsg = document.getElementById("partnerMsg");
+
+  partnerForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    partnerMsg.style.display = "none";
+
+    const name = document.getElementById("p-name").value;
+    const address = document.getElementById("p-address").value;
+    const contact = document.getElementById("p-contact").value;
+    const accepted = document.getElementById("p-accepted").value;
+
+    const fullAddress = `${address}, Rio de Janeiro, Brasil`;
+    const geo = await geocode(fullAddress);
+
+    if (!geo) {
+      partnerMsg.textContent = "Endereço não encontrado. Confira rua, número e bairro.";
+      partnerMsg.style.display = "block";
+      return;
+    }
+
     const newPoint = {
-      name,
-      address,
-      city,
-      type,
+      id: Date.now(),
+      name: name,
+      city: "Rio de Janeiro",
+      address: address,
+      type: "Ponto parceiro",
       lat: geo.lat,
-      lng: geo.lng
+      lng: geo.lng,
+      contact: contact, // WhatsApp do dono do ponto
+      accepted
     };
 
-    points.push(newPoint);
-    renderPoints(points);
+    // 1) Salva como ponto pendente (admin depois aprova)
+    pendingPoints.push(newPoint);
+    saveData();
 
-    L.marker([newPoint.lat, newPoint.lng])
-      .addTo(markersLayer)
-      .bindPopup(`<b>${newPoint.name}</b><br>${newPoint.address}`);
+    // 2) Prepara mensagem automática para o SEU WhatsApp (admin)
+    const adminDigits = ADMIN_WHATSAPP.replace(/\D/g, "");
+    if (adminDigits && adminDigits.length >= 10) {
+      const waText = encodeURIComponent(
+        `Olá, quero cadastrar meu ponto de coleta de e-lixo na plataforma.\n\n` +
+        `Dados do ponto:\n` +
+        `- Nome: ${name}\n` +
+        `- Endereço: ${address}\n` +
+        `- Meu WhatsApp: ${contact}\n` +
+        `- O que recebo: ${accepted}\n`
+      );
+      const waLink = `https://wa.me/${adminDigits}?text=${waText}`;
+      window.open(waLink, "_blank");
+    }
 
-    msgOk.style.display = "block";
-    form.reset();
-
-    setTimeout(() => {
-      msgOk.style.display = "none";
-      msgWarn.style.display = "none";
-    }, 5000);
+    partnerMsg.textContent = "Ponto enviado para análise. Entraremos em contato pelo WhatsApp.";
+    partnerMsg.style.display = "block";
+    partnerForm.reset();
+    setTimeout(() => partnerMsg.style.display = "none", 5000);
   });
+
+  // ===== Área Administrativa =====
+  const openAdminBtn = document.getElementById("openAdminBtn");
+  const adminArea = document.getElementById("adminArea");
+  const adminLoginForm = document.getElementById("adminLoginForm");
+  const adminLoginMsg = document.getElementById("adminLoginMsg");
+  const adminPanel = document.getElementById("adminPanel");
+  const adminLoginCard = document.getElementById("adminLoginCard");
+
+  const pendingList = document.getElementById("pendingList");
+  const noPendingMsg = document.getElementById("noPendingMsg");
+  const approvedListEl = document.getElementById("approvedList");
+  const noApprovedMsg = document.getElementById("noApprovedMsg");
+
+  const discardListEl = document.getElementById("discardList");
+  const noDiscardMsg = document.getElementById("noDiscardMsg");
+
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "123456";
+
+  openAdminBtn?.addEventListener("click", () => {
+    if (adminArea.style.display === "none" || !adminArea.style.display) {
+      adminArea.style.display = "block";
+      adminArea.scrollIntoView({ behavior: "smooth" });
+    } else {
+      adminArea.style.display = "none";
+    }
+  });
+
+  adminLoginForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const u = document.getElementById("adminUser").value;
+    const p = document.getElementById("adminPass").value;
+
+    if (u === ADMIN_USER && p === ADMIN_PASS) {
+      adminLoginMsg.style.display = "none";
+      adminLoginCard.style.display = "none";
+      adminPanel.style.display = "block";
+      renderPending();
+      renderApproved();
+      renderDiscards();
+    } else {
+      adminLoginMsg.textContent = "Login ou senha inválidos.";
+      adminLoginMsg.style.display = "block";
+    }
+  });
+
+  function renderPending() {
+    pendingList.innerHTML = "";
+    if (!pendingPoints.length) {
+      noPendingMsg.style.display = "block";
+      return;
+    }
+    noPendingMsg.style.display = "none";
+
+    pendingPoints.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "point-item";
+      div.innerHTML = `
+        <h4>${p.name}</h4>
+        <p>${p.address}</p>
+        <p>WhatsApp: ${p.contact || "-"}</p>
+        <p>Recebe: ${p.accepted || "-"}</p>
+        <button class="btn-approve" data-index="${index}">Aprovar</button>
+        <button class="btn-reject" data-index="${index}">Recusar</button>
+      `;
+      pendingList.appendChild(div);
+    });
+
+    pendingList.querySelectorAll(".btn-approve").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        const point = pendingPoints[idx];
+        pendingPoints.splice(idx, 1);
+        approvedPoints.push(point);
+        saveData();
+        updatePublicData();
+        renderPending();
+        renderApproved();
+      });
+    });
+
+    pendingList.querySelectorAll(".btn-reject").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        pendingPoints.splice(idx, 1);
+        saveData();
+        renderPending();
+      });
+    });
+  }
+
+  function renderApproved() {
+    approvedListEl.innerHTML = "";
+    if (!approvedPoints.length) {
+      noApprovedMsg.style.display = "block";
+      return;
+    }
+    noApprovedMsg.style.display = "none";
+
+    approvedPoints.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "point-item";
+      div.innerHTML = `
+        <h4>${p.name}</h4>
+        <p>${p.address}</p>
+        <p>WhatsApp: ${p.contact || "-"}</p>
+        <p>Recebe: ${p.accepted || "-"}</p>
+        <button class="btn-delete" data-index="${index}">Remover ponto</button>
+      `;
+      approvedListEl.appendChild(div);
+    });
+
+    approvedListEl.querySelectorAll(".btn-delete").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        approvedPoints.splice(idx, 1);
+        saveData();
+        updatePublicData();
+        renderApproved();
+      });
+    });
+  }
+
+  function renderDiscards() {
+    if (!discardListEl || !noDiscardMsg) return;
+
+    discardListEl.innerHTML = "";
+    if (!discardLeads.length) {
+      noDiscardMsg.style.display = "block";
+      return;
+    }
+    noDiscardMsg.style.display = "none";
+
+    discardLeads.forEach((lead, index) => {
+      const div = document.createElement("div");
+      div.className = "point-item";
+      div.innerHTML = `
+        <h4>${lead.ponto || "Ponto não informado"}</h4>
+        <p><strong>Nome:</strong> ${lead.nome}</p>
+        <p><strong>E-mail:</strong> ${lead.email}</p>
+        <p><strong>Itens:</strong> ${lead.item}</p>
+        <p><strong>Data/Hora:</strong> ${
+          lead.horario ? new Date(lead.horario).toLocaleString("pt-BR") : "-"
+        }</p>
+        <p style="font-size:.75rem;color:#666;">
+          Registrado em: ${lead.criadoEm ? new Date(lead.criadoEm).toLocaleString("pt-BR") : "-"}
+        </p>
+        <button class="btn-delete" data-index="${index}">Remover agendamento</button>
+      `;
+      discardListEl.appendChild(div);
+    });
+
+    discardListEl.querySelectorAll(".btn-delete").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        discardLeads.splice(idx, 1);
+        saveData();
+        renderDiscards();
+      });
+    });
+  }
+
+  // Atualiza dados públicos na carga inicial
+  updatePublicData();
   </script>
 </body>
 </html>
